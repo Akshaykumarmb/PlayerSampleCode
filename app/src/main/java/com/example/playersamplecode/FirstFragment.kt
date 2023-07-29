@@ -43,6 +43,11 @@ class FirstFragment : Fragment() {
             findNavController().navigate(R.id.action_FirstFragment_to_SecondFragment, bundleOf("videoURL" to videoUrl,"videoTYPE" to "dash"))
         }
 
+
+        binding.hlsWithAdPlayback.setOnClickListener {
+            val videoUrl = URLConstants.hls_url
+            findNavController().navigate(R.id.action_FirstFragment_to_SecondFragment, bundleOf("videoURL" to videoUrl,"videoTYPE" to "hls_ad"))
+        }
     }
 
     override fun onDestroyView() {
