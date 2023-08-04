@@ -2,24 +2,25 @@ package com.example.playersamplecode
 
 import android.content.Context
 import android.net.Uri
+import com.example.playersamplecode.URLConstants.drm_licence
+import com.example.playersamplecode.URLConstants.drm_url
 import com.example.playersamplecode.databinding.FragmentSecondBinding
-import com.google.android.exoplayer2.C
-import com.google.android.exoplayer2.DefaultRenderersFactory
-import com.google.android.exoplayer2.ExoPlayer
-import com.google.android.exoplayer2.MediaItem
-import com.google.android.exoplayer2.drm.DefaultDrmSessionManager
-import com.google.android.exoplayer2.drm.FrameworkMediaDrm
-import com.google.android.exoplayer2.drm.HttpMediaDrmCallback
+import com.google.android.exoplayer2.*
+import com.google.android.exoplayer2.MediaItem.AdsConfiguration
+import com.google.android.exoplayer2.drm.DefaultDrmSessionManagerProvider
 import com.google.android.exoplayer2.ext.ima.ImaAdsLoader
+import com.google.android.exoplayer2.ext.ima.ImaServerSideAdInsertionMediaSource
 import com.google.android.exoplayer2.source.DefaultMediaSourceFactory
 import com.google.android.exoplayer2.source.MediaSource
 import com.google.android.exoplayer2.source.MediaSourceFactory
+import com.google.android.exoplayer2.source.ads.AdsLoader
 import com.google.android.exoplayer2.source.dash.DashMediaSource
 import com.google.android.exoplayer2.source.dash.DefaultDashChunkSource
 import com.google.android.exoplayer2.source.hls.HlsMediaSource
 import com.google.android.exoplayer2.upstream.DefaultDataSource
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSource
-import com.google.android.exoplayer2.util.Util
+import com.google.android.exoplayer2.util.MimeTypes
+import com.google.common.collect.ImmutableList
 
 class CorePlayer {
 
@@ -35,17 +36,29 @@ class CorePlayer {
                 exoPlayer = loadPlayerForHlsAds(context,binding,videoUrl)
             }
             "drm" -> {
-                exoPlayer = loadDRMContent(context)
+                exoPlayer = loadDRMContent(context,videoUrl)
+                binding.idExoPlayerVIew.useController = false
             }
         }
         return exoPlayer
     }
 
-    fun loadPlayerForHLSorDASH(context: Context,videoUrl:String,videoType:String): ExoPlayer? {
+    private fun loadPlayerForHLSorDASH(context: Context, videoUrl:String, videoType:String): ExoPlayer? {
         val exoPlayer = ExoPlayer.Builder(context).build()
         val defaultHttpDataSourceFactory = DefaultHttpDataSource.Factory()
-        val mediaItem =
-            MediaItem.fromUri(Uri.parse(videoUrl))
+
+        val assetSrtUri = Uri.parse(("file:///android_asset/subtitle.srt"))
+        val subtitle = MediaItem.SubtitleConfiguration.Builder(assetSrtUri)
+            .setMimeType(MimeTypes.APPLICATION_SUBRIP)
+            .setLanguage("en")
+            .setSelectionFlags(C.SELECTION_FLAG_DEFAULT)
+            .build()
+
+        val mediaItem =MediaItem.Builder()
+           .setUri(videoUrl)
+            .setSubtitleConfigurations(ImmutableList.of(subtitle))
+            .build()
+
         var mediaSource = if(videoType == "hls") {
             HlsMediaSource.Factory(defaultHttpDataSourceFactory).createMediaSource(mediaItem)
         }else{
@@ -55,7 +68,7 @@ class CorePlayer {
         return exoPlayer
     }
 
-    fun loadPlayerForHlsAds(context: Context,binding: FragmentSecondBinding,videoUrl: String): ExoPlayer? {
+    private fun loadPlayerForHlsAds(context: Context, binding: FragmentSecondBinding, videoUrl: String): ExoPlayer? {
         val dataSourceFactory = DefaultDataSource.Factory(context)
         val adsLoader = ImaAdsLoader.Builder(context).build()
         val mediaSourceFactory: MediaSourceFactory = DefaultMediaSourceFactory(dataSourceFactory)
@@ -76,30 +89,27 @@ class CorePlayer {
         return exoPlayer
     }
 
-    fun loadDRMContent(context: Context,): ExoPlayer? {
-        val dataSourceFactory = DefaultDataSource.Factory(context)
+    private fun loadDRMContent(context: Context,videoUrl: String): ExoPlayer? {
 
-        val userAgent = Util.getUserAgent(context, "DRM example app")
-        val defaultHttpDataSourceFactory = DefaultHttpDataSource.Factory().setUserAgent(userAgent)
-        val drmCallback = HttpMediaDrmCallback(
-            URLConstants.mLicenseServer,
-            defaultHttpDataSourceFactory
+       val mediaItem=MediaItem.Builder()
+           .setUri(Uri.parse(videoUrl))
+           .setMediaMetadata(MediaMetadata.Builder().setTitle("Widevine DASH cenc: Tears").build())
+           .setMimeType("application/dash+xml")
+           .setDrmConfiguration(MediaItem.DrmConfiguration.Builder(C.WIDEVINE_UUID)
+                   .setLicenseUri(drm_licence)
+                   .build())
+           .build()
+
+        val drmSessionManagerProvider = DefaultDrmSessionManagerProvider()
+        drmSessionManagerProvider.setDrmHttpDataSourceFactory(
+            DefaultHttpDataSource.Factory()
         )
+        val factory=DefaultMediaSourceFactory(context)
+            .setDrmSessionManagerProvider(drmSessionManagerProvider)
 
-        // Here the license token is attached to license request
-        if (URLConstants.mLicenseToken != null) {
-            drmCallback.setKeyRequestProperty("X-AxDRM-Message", URLConstants.mLicenseToken)
-        }
+        exoPlayer = ExoPlayer.Builder(context).setMediaSourceFactory(factory).build()
+        exoPlayer?.setMediaItem(mediaItem)
 
-        val builddermSession = DefaultDrmSessionManager.Builder()
-            .setUuidAndExoMediaDrmProvider(C.WIDEVINE_UUID, FrameworkMediaDrm.DEFAULT_PROVIDER)
-            .build(drmCallback)
-
-        val mediasource = DashMediaSource.Factory(DefaultDashChunkSource.Factory(dataSourceFactory), dataSourceFactory)
-            .setDrmSessionManagerProvider{builddermSession}
-            .createMediaSource(MediaItem.fromUri(Uri.parse(URLConstants.mContentUri)))
-
-        exoPlayer?.setMediaSource(mediasource)
         return exoPlayer
     }
 
