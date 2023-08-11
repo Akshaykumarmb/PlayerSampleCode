@@ -43,6 +43,11 @@ class FirstFragment : Fragment() {
             findNavController().navigate(R.id.action_FirstFragment_to_SecondFragment, bundleOf("videoURL" to videoUrl,"videoTYPE" to "drm"))
         }
 
+        binding.dashDrmWithSubtitlePlayback.setOnClickListener {
+            val videoUrl = URLConstants.drm_url
+            findNavController().navigate(R.id.action_FirstFragment_to_SecondFragment, bundleOf("videoURL" to videoUrl,"videoTYPE" to "drm_subtitle"))
+        }
+
         binding.dashPlayback.setOnClickListener {
             val videoUrl = URLConstants.dash_url
             findNavController().navigate(R.id.action_FirstFragment_to_SecondFragment, bundleOf("videoURL" to videoUrl,"videoTYPE" to "dash"))

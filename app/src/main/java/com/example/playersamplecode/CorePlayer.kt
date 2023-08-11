@@ -1,9 +1,11 @@
 package com.example.playersamplecode
 
 import android.content.Context
+import android.graphics.Color
 import android.net.Uri
 import com.example.playersamplecode.URLConstants.drm_licence
 import com.example.playersamplecode.URLConstants.drm_url
+import com.example.playersamplecode.URLConstants.subtitle_url
 import com.example.playersamplecode.databinding.FragmentSecondBinding
 import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.MediaItem.AdsConfiguration
@@ -17,6 +19,10 @@ import com.google.android.exoplayer2.source.ads.AdsLoader
 import com.google.android.exoplayer2.source.dash.DashMediaSource
 import com.google.android.exoplayer2.source.dash.DefaultDashChunkSource
 import com.google.android.exoplayer2.source.hls.HlsMediaSource
+import com.google.android.exoplayer2.text.Cue
+import com.google.android.exoplayer2.text.Cue.TEXT_SIZE_TYPE_ABSOLUTE
+import com.google.android.exoplayer2.text.TextOutput
+import com.google.android.exoplayer2.ui.CaptionStyleCompat
 import com.google.android.exoplayer2.upstream.DefaultDataSource
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSource
 import com.google.android.exoplayer2.util.MimeTypes
@@ -36,9 +42,18 @@ class CorePlayer {
                 exoPlayer = loadPlayerForHlsAds(context,binding,videoUrl)
             }
             "drm" -> {
-                exoPlayer = loadDRMContent(context,videoUrl)
+                exoPlayer = loadDRMContent(context,videoUrl,null)
                 binding.idExoPlayerVIew.useController = false
             }
+            "drm_subtitle"->{
+                exoPlayer = loadDRMContent(context,videoUrl,URLConstants.subtitle_url)
+                binding.idExoPlayerVIew.useController = false
+
+                val captionStyleCompat = CaptionStyleCompat(Color.WHITE, Color.parseColor("#5b000000"), Color.TRANSPARENT, CaptionStyleCompat.EDGE_TYPE_DROP_SHADOW, Color.parseColor("#5b000000"), null)
+                binding.idExoPlayerVIew.subtitleView?.setStyle(captionStyleCompat)
+                binding.idExoPlayerVIew.subtitleView?.setApplyEmbeddedStyles(false)
+            }
+
         }
         return exoPlayer
     }
@@ -85,16 +100,40 @@ class CorePlayer {
         return exoPlayer
     }
 
-    private fun loadDRMContent(context: Context,videoUrl: String): ExoPlayer? {
+    private fun loadDRMContent(context: Context,videoUrl: String,subtitle:String?): ExoPlayer? {
 
-       val mediaItem=MediaItem.Builder()
-           .setUri(Uri.parse(videoUrl))
-           .setMediaMetadata(MediaMetadata.Builder().setTitle("Widevine DASH cenc: Tears").build())
-           .setMimeType("application/dash+xml")
-           .setDrmConfiguration(MediaItem.DrmConfiguration.Builder(C.WIDEVINE_UUID)
-                   .setLicenseUri(drm_licence)
-                   .build())
-           .build()
+        var mediaItem:MediaItem?=null
+        if(subtitle!=null && subtitle.isNotEmpty()){
+
+           val subtitleConfiguration= MediaItem.SubtitleConfiguration.Builder(
+                Uri.parse(subtitle))
+                .setMimeType("text/vtt")
+                .setLanguage("en")
+                .setSelectionFlags(C.SELECTION_FLAG_DEFAULT)
+                .build()
+
+             mediaItem=MediaItem.Builder()
+                .setUri(Uri.parse(videoUrl))
+                .setMediaMetadata(MediaMetadata.Builder().setTitle("Widevine DASH cenc: Tears").build())
+                .setMimeType("application/dash+xml")
+                .setSubtitleConfigurations(ImmutableList.of(subtitleConfiguration))
+                .setDrmConfiguration(MediaItem.DrmConfiguration.Builder(C.WIDEVINE_UUID)
+                    .setLicenseUri(drm_licence)
+                    .build())
+                .build()
+
+
+
+        }else{
+             mediaItem=MediaItem.Builder()
+                .setUri(Uri.parse(videoUrl))
+                .setMediaMetadata(MediaMetadata.Builder().setTitle("Widevine DASH cenc: Tears").build())
+                .setMimeType("application/dash+xml")
+                .setDrmConfiguration(MediaItem.DrmConfiguration.Builder(C.WIDEVINE_UUID)
+                    .setLicenseUri(drm_licence)
+                    .build())
+                .build()
+        }
 
         val drmSessionManagerProvider = DefaultDrmSessionManagerProvider()
         drmSessionManagerProvider.setDrmHttpDataSourceFactory(
@@ -105,6 +144,8 @@ class CorePlayer {
 
         exoPlayer = ExoPlayer.Builder(context).setMediaSourceFactory(factory).build()
         exoPlayer?.setMediaItem(mediaItem)
+
+
 
         return exoPlayer
     }

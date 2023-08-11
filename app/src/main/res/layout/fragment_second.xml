@@ -24,6 +24,13 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"/>
 
+    <com.google.android.exoplayer2.ui.SubtitleView
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:id="@+id/subtitleview"
+        app:layout_constraintBottom_toBottomOf="@id/idExoPlayerVIew"
+        />
+
     <Button
         android:id="@+id/button_second"
         android:layout_width="wrap_content"

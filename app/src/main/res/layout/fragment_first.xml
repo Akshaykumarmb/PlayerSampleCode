@@ -50,4 +50,15 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/dash_playback"
         />
+
+    <Button
+        android:id="@+id/dash_drm_with_subtitle_playback"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Dash DRM playback With subtitle"
+        android:layout_marginTop="30dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/dash_drm_playback"
+        />
 </androidx.constraintlayout.widget.ConstraintLayout>
