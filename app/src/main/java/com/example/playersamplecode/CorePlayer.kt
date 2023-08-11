@@ -47,16 +47,8 @@ class CorePlayer {
         val exoPlayer = ExoPlayer.Builder(context).build()
         val defaultHttpDataSourceFactory = DefaultHttpDataSource.Factory()
 
-        val assetSrtUri = Uri.parse(("file:///android_asset/subtitle.srt"))
-        val subtitle = MediaItem.SubtitleConfiguration.Builder(assetSrtUri)
-            .setMimeType(MimeTypes.APPLICATION_SUBRIP)
-            .setLanguage("en")
-            .setSelectionFlags(C.SELECTION_FLAG_DEFAULT)
-            .build()
-
         val mediaItem =MediaItem.Builder()
            .setUri(videoUrl)
-            .setSubtitleConfigurations(ImmutableList.of(subtitle))
             .build()
 
         var mediaSource = if(videoType == "hls") {
@@ -65,6 +57,10 @@ class CorePlayer {
             DashMediaSource.Factory(defaultHttpDataSourceFactory).createMediaSource(mediaItem)
         }
         exoPlayer?.setMediaSource(mediaSource)
+        exoPlayer?.trackSelectionParameters = exoPlayer.trackSelectionParameters
+            .buildUpon()
+            .setPreferredTextLanguage("en")
+            .build()
         return exoPlayer
     }
 

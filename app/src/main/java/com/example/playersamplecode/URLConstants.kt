@@ -2,7 +2,9 @@ package com.example.playersamplecode
 
 object URLConstants {
 
-    val hls_url = "https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_fmp4/master.m3u8"
+//    val hls_url = "https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_fmp4/master.m3u8"
+
+    val hls_url = "https://stream.mux.com/HDGj01zK01esWsWf9WJj5t5yuXQZJFF6bo.m3u8"
 
     val dash_url = "https://dash.akamaized.net/akamai/bbb_30fps/bbb_30fps.mpd"
 
