@@ -14,47 +14,46 @@ import com.example.playersamplecode.databinding.FragmentFirstBinding
  */
 class FirstFragment : Fragment() {
 
-    private var _binding: FragmentFirstBinding? = null
+    private var firstBinding: FragmentFirstBinding? = null
 
     // This property is only valid between onCreateView and
     // onDestroyView.
-    private val binding get() = _binding!!
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
 
-        _binding = FragmentFirstBinding.inflate(inflater, container, false)
-        return binding.root
+        firstBinding = FragmentFirstBinding.inflate(inflater, container, false)
+        return firstBinding?.root
 
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.hlsPlayback.setOnClickListener {
+        firstBinding?.hlsPlayback?.setOnClickListener {
             val videoUrl = URLConstants.hls_url
             findNavController().navigate(R.id.action_FirstFragment_to_SecondFragment, bundleOf("videoURL" to videoUrl,"videoTYPE" to "hls"))
         }
 
-        binding.dashDrmPlayback.setOnClickListener {
+        firstBinding?.dashDrmPlayback?.setOnClickListener {
             val videoUrl = URLConstants.drm_url
             findNavController().navigate(R.id.action_FirstFragment_to_SecondFragment, bundleOf("videoURL" to videoUrl,"videoTYPE" to "drm"))
         }
 
-        binding.dashDrmWithSubtitlePlayback.setOnClickListener {
+        firstBinding?.dashDrmWithSubtitlePlayback?.setOnClickListener {
             val videoUrl = URLConstants.drm_url
             findNavController().navigate(R.id.action_FirstFragment_to_SecondFragment, bundleOf("videoURL" to videoUrl,"videoTYPE" to "drm_subtitle"))
         }
 
-        binding.dashPlayback.setOnClickListener {
+        firstBinding?.dashPlayback?.setOnClickListener {
             val videoUrl = URLConstants.dash_url
             findNavController().navigate(R.id.action_FirstFragment_to_SecondFragment, bundleOf("videoURL" to videoUrl,"videoTYPE" to "dash"))
         }
 
 
-        binding.hlsWithAdPlayback.setOnClickListener {
+        firstBinding?.hlsWithAdPlayback?.setOnClickListener {
             val videoUrl = URLConstants.hls_url
             findNavController().navigate(R.id.action_FirstFragment_to_SecondFragment, bundleOf("videoURL" to videoUrl,"videoTYPE" to "hls_ad"))
         }
@@ -62,6 +61,6 @@ class FirstFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        _binding = null
+        firstBinding = null
     }
 }
